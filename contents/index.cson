@@ -1,0 +1,4 @@
+title: "Home"
+component: "page"
+path: ""
+content: "Index page content in <code>HTML</code>"
