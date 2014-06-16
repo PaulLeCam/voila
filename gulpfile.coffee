@@ -4,7 +4,9 @@ $ = require("gulp-load-plugins")()
 path = require "path"
 through = require "through2"
 CSON = require "cson-safe"
-react = require "react"
+React = require "react"
+ReactTools = require "react-tools"
+voila = require "./lib/voila"
 
 p =
   assets: "assets/**/*"
@@ -20,19 +22,22 @@ buildOne = through.obj (file, enc, cb) ->
       .replace __dirname + "/contents/", ""
       .replace ".cson", ""
 
-  Component = require "./components/" + data.component
-  content = react.renderComponentToString Component
-    title: data.title
-    children: data.content
+  voila.html2component data.content, (err, Content) ->
+    return cb err if err
 
-  gulp.src p.layout
-  .pipe $.rename "index.html"
-  .pipe $.replace "{{title}}", data.title
-  .pipe $.replace "{{content}}", content
-  .pipe $.replace "{{data}}", JSON.stringify data
-  .pipe gulp.dest path.resolve p.build, data.path
+    Component = voila.Component[ data.component ]
+    content = voila.renderComponentToString Component
+      title: data.title
+      children: Content()
 
-  cb()
+    gulp.src p.layout
+    .pipe $.rename "index.html"
+    .pipe $.replace "{{title}}", data.title
+    .pipe $.replace "{{content}}", content
+    .pipe $.replace "{{data}}", JSON.stringify data
+    .pipe gulp.dest path.resolve p.build, data.path
+
+    cb()
 
 gulp.task "clean", ->
   gulp.src p.build, read: no

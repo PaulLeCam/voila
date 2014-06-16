@@ -1,3 +1,5 @@
 title: "Page Not Found"
 component: "page"
-content: "Page Not Found"
+content: """
+  <a href="/">Go back home</a>
+"""
