@@ -23,20 +23,23 @@
   },
   "homepage": "https://github.com/PaulLeCam/voila",
   "devDependencies": {
+    "browserify": "^4.1.10",
     "coffee-script": "^1.7.1",
+    "coffeeify": "^0.6.0",
     "cson-safe": "^0.1.1",
     "envify": "^1.2.1",
-    "gulp": "^3.7.0",
+    "gulp": "^3.8.1",
     "gulp-clean": "^0.3.0",
     "gulp-load-plugins": "^0.5.1",
     "gulp-rename": "^1.2.0",
-    "gulp-replace": "^0.3.0",
-    "gulp-util": "^2.2.16",
-    "jsdom": "^0.10.6",
+    "gulp-template": "^0.1.1",
+    "gulp-util": "^2.2.17",
+    "jsdom": "^0.11.0",
     "lodash": "^2.4.1",
     "q": "^1.0.1",
     "react": "^0.10.0",
     "react-tools": "^0.10.0",
-    "through2": "^0.5.1"
+    "through2": "^0.5.1",
+    "vinyl-source-stream": "^0.1.1"
   }
 }

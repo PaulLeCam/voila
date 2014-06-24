@@ -1,4 +1,5 @@
 title: "Home"
 component: "page"
+name: "index"
 path: ""
 content: "Index page content in <code>HTML</code>"
