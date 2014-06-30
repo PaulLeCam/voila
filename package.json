@@ -26,10 +26,15 @@
     "browserify": "^4.1.10",
     "coffee-script": "^1.7.1",
     "coffeeify": "^0.6.0",
+    "connect-livereload": "^0.4.0",
     "cson-safe": "^0.1.1",
     "envify": "^1.2.1",
+    "express": "^4.4.4",
     "gulp": "^3.8.1",
     "gulp-clean": "^0.3.0",
+    "gulp-debug": "^0.3.0",
+    "gulp-file": "^0.1.0",
+    "gulp-livereload": "^2.1.0",
     "gulp-load-plugins": "^0.5.1",
     "gulp-rename": "^1.2.0",
     "gulp-template": "^0.1.1",
@@ -40,6 +45,11 @@
     "react": "^0.10.0",
     "react-tools": "^0.10.0",
     "through2": "^0.5.1",
-    "vinyl-source-stream": "^0.1.1"
+    "tiny-lr": "0.0.7",
+    "vinyl-source-stream2": "^0.1.1"
+  },
+  "dependencies": {
+    "ampersand-router": "^1.0.1",
+    "curl-amd": "^0.8.10"
   }
 }

@@ -1,4 +1,4 @@
-react = require "react"
+react = require "react/addons"
 
 {a} = react.DOM
 

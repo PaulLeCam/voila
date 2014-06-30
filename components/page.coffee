@@ -1,11 +1,11 @@
-react = require "react"
-site = require "./site"
+react = require "react/addons"
+layout = require "./layout"
 
 {div, h2} = react.DOM
 
 module.exports = react.createClass
   displayName: "page"
   render: ->
-    site null,
+    layout null,
       h2 null, @props.title
       @props.children

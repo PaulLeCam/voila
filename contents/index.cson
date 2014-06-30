@@ -1,5 +1,5 @@
 title: "Home"
-component: "page"
+component: "layout"
 name: "index"
 path: ""
-content: "Index page content in <code>HTML</code>"
+contents: "Index page content in <code>HTML</code>"

@@ -1,21 +1,32 @@
-gulp = require "gulp"
-$ = require("gulp-load-plugins")()
-
+# Core dependencies
 fs = require "fs"
 path = require "path"
-coffee = require "coffee-script"
 _ = require "lodash"
 
-source = require "vinyl-source-stream"
+# Gulp + streams
+gulp = require "gulp"
+$ = require("gulp-load-plugins")()
+source = require "vinyl-source-stream2"
 through = require "through2"
 
+# Browserify
 browserify = require "browserify"
 coffeeify = require "coffeeify"
 
+# Libs for tasks
 CSON = require "cson-safe"
 React = require "react/addons"
 {html2component} = require "./lib/react-transform"
 
+# Static server + livereload
+express = require "express"
+refresh = require "gulp-livereload"
+lrserver = require("tiny-lr")()
+livereload = require "connect-livereload"
+
+# Params
+serverport = 3000
+lrport = 35729
 p =
   assets: "assets/**/*"
   build: "build/"
@@ -25,9 +36,12 @@ p =
   temp: "temp/"
   templates: "templates/"
 
-path2name = (pth) ->
-  pth.replace /\/./g, (match) ->
-    match.toUpperCase()
+# Setup static server
+server = express()
+# server.use livereload port: lrport
+server.use express.static "#{ __dirname }/#{ p.build }"
+
+# Streams
 
 applyComponentsMappings = through.obj (file, enc, cb) ->
   React = require "#{ __dirname }/#{ p.temp }react"
@@ -38,19 +52,29 @@ applyComponentsMappings = through.obj (file, enc, cb) ->
   @push file
   cb()
 
-buildPageHTML = through.obj (file, enc, cb) ->
-  pageComponent = require "#{ __dirname }/#{ p.temp }#{ file.data.name }"
-  gulp.src p.templates + "layout.html"
-  .pipe $.rename "index.html"
-  .pipe $.template
-    title: file.data.title
-    content: React.renderComponentToString pageComponent
-    data: JSON.stringify file.data
+buildPageScript = through.obj (file, enc, cb) ->
+  browserify()
+  .external ["./react"]
+  .require "#{ __dirname }/#{ p.temp }#{ file.data.name }", expose: "page/#{ file.data.name }"
+  .bundle()
+  .pipe source "component.js"
   .pipe gulp.dest path.resolve p.build, file.data.path
   .on "end", =>
     @push file
     cb()
 
+buildPageHTML = through.obj (file, enc, cb) ->
+  pageComponent = require "#{ __dirname }/#{ p.temp }#{ file.data.name }"
+  html = React.renderComponentToString pageComponent
+
+  $.file "index.html", html
+  .pipe gulp.dest path.resolve p.build, file.data.path
+  # End event not emitted, why?
+  .on "data", =>
+    @push file
+    cb()
+
+# Change file object to have props of the component
 buildPageComponent = through.obj (file, enc, cb) ->
   gulp.src p.templates + "component.js"
   .pipe $.rename file.data.name + ".js"
@@ -58,7 +82,7 @@ buildPageComponent = through.obj (file, enc, cb) ->
     componentName: file.data.name
     title: file.data.title
     BaseComponent: file.data.component
-    content: file.contents.toString()
+    contents: file.contents.toString()
   .pipe gulp.dest p.temp
   .on "end", =>
     @push file
@@ -71,6 +95,10 @@ convertToComponent = through.obj (file, enc, cb) ->
     @push file
     cb()
 
+path2name = (pth) ->
+  pth.replace /\/./g, (match) ->
+    match.toUpperCase()
+
 getComponentData = through.obj (file, enc, cb) ->
   data = CSON.parse file.contents.toString()
 
@@ -79,8 +107,22 @@ getComponentData = through.obj (file, enc, cb) ->
     .replace ".cson", ""
   data.name ?= path2name data.path
 
-  file.contents = new Buffer data.content
+  file.contents = new Buffer data.contents
   file.data = data
+
+  @push file
+  cb()
+
+# Open a CSON file, parse its contents and assign them to the file object
+getContent = through.obj (srcFile, enc, cb) ->
+  data = CSON.parse srcFile.contents.toString()
+  file = new $.util.File data
+
+  file.path ?= srcFile.path
+    .replace __dirname + "/contents/", ""
+    .replace ".cson", ""
+  file.name ?= path2name file.path
+  file.contents = new Buffer data.contents
 
   @push file
   cb()
@@ -99,28 +141,48 @@ gulp.task "react", ["clean"], ->
     components: fs.readdirSync __dirname + "/components"
   .pipe gulp.dest p.temp
 
-gulp.task "browserify", ->
+gulp.task "client", ["clean"], ->
+  gulp.src p.client + "**"
+  .pipe gulp.dest p.temp
+
+gulp.task "browserify", ["react", "client"], ->
   browserify
-    entries: "#{ __dirname }/#{ p.client }app.coffee"
+    entries: "#{ __dirname }/#{ p.temp }app.coffee"
     extensions: [".coffee"]
+  .require "#{ __dirname }/#{ p.temp }react", expose: "./react"
   .transform coffeeify
   .bundle()
   .pipe source "bundle.js"
   .pipe gulp.dest p.build
 
-gulp.task "build", ["clean", "assets", "react"], ->
+gulp.task "build", ["clean", "assets", "react", "browserify"], ->
   gulp.src p.contents
   .pipe getComponentData
   .pipe convertToComponent
   .pipe applyComponentsMappings
   .pipe buildPageComponent
   .pipe buildPageHTML
+  .pipe buildPageScript
+
+  # getContent
+  # apply content filters (markdown, etc)
+  # convert content to component
+  # apply component filters (mappings)
+  # write component
+  # parallel call to writing functions for JS and HTML files
+
+gulp.task "serve", ->
+  server.listen serverport
+  # lrserver.listen lrport
 
 gulp.task "watch", ["build"], ->
   gulp.watch [
     p.assets
+    p.client
     p.components
     p.contents
   ], ["build"]
 
-gulp.task "default", ["build"]
+gulp.task "dev", ["serve", "browserify", "watch"]
+
+gulp.task "default", ["build", "browserify"]

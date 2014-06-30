@@ -1,4 +1,5 @@
-react = require "react/addons"
+router = require "./router"
+router.history.start pushState: on
 
-data = window.data
-console.log data
+router.on "route", (route) ->
+  console.log "route", route

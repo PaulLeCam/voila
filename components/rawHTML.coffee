@@ -1,4 +1,4 @@
-react = require "react"
+react = require "react/addons"
 
 module.exports = react.createClass
   displayName: "rawHTML"
