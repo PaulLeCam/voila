@@ -1,10 +1,10 @@
 var React = require("./react");
 
 var ContentComponent = React.createClass({
-  displayName: "${ componentName }Page",
+  displayName: "${ name }Page",
   render: function() {
-    return ${ contents }
+    return ${ contents.toString() }
   }
 });
 
-module.exports = React.DOM.${ BaseComponent }({title: "${ title }"}, ContentComponent());
+module.exports = React.DOM.${ component }({title: "${ title }"}, ContentComponent());

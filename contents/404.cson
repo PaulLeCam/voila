@@ -1,5 +1,5 @@
 title: "Page Not Found"
 component: "layout"
 contents: """
-  <a href="/">Go back home</a>
+  [Go back home](/)
 """

@@ -12,9 +12,11 @@ module.exports = react.createClass
         meta charSet: "utf-8"
         title null, @props.title
         script src: "/modernizr.js"
-        link rel: "stylesheet", href: "/style.css"
+        link rel: "stylesheet", href: "/h5bp.css"
+        link rel: "stylesheet", href: "/components.css"
+        link rel: "stylesheet", href: "/main.css"
       body null,
-        div id: "container",
+        div className: "container",
           h1 null, @props.title
           @props.children
         script src: "/bundle.js"
