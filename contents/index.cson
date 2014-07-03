@@ -1,5 +1,9 @@
 title: "Home"
-component: "layout"
+component: "page"
 name: "index"
 path: ""
-contents: "Index page content in `HTML`"
+contents: """
+  Index page content in `HTML`
+
+  [Oh no! 404](/404)
+"""

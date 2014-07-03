@@ -30,16 +30,21 @@ lrport = 35729
 p =
   assets: "assets/**/*"
   build: "build/"
-  client: "client/**/*"
   components: "components/**/*.coffee"
   contents: "contents/**/*.cson"
   temp: "temp/"
   templates: "templates/"
+  react: "react/**/*"
 
 # Setup static server
 server = express()
-# server.use livereload port: lrport
+server.use livereload port: lrport
 server.use express.static "#{ __dirname }/#{ p.build }"
+
+# Utils
+getFiles = (pth) ->
+  _.filter fs.readdirSync(__dirname + "/" + pth), (f) ->
+    fs.statSync(__dirname + "/" + pth + "/" + f).isFile() and f[0] isnt "."
 
 # Streams
 
@@ -67,13 +72,15 @@ buildPageScript = ->
 
 buildPageHTML = ->
   through.obj (file, enc, cb) ->
-    pageComponent = require "#{ __dirname }/#{ p.temp }#{ file.name }"
-    html = React.renderComponentToString pageComponent
+    app = require "#{ __dirname }/#{ p.temp }app-component"
+    page = require "#{ __dirname }/#{ p.temp }#{ file.name }"
 
-    $.file "index.html", html
+    gulp.src p.templates + "index.html"
+    .pipe $.template
+      title: page.props.title
+      content: React.renderComponentToString app page.props, page.component()
     .pipe gulp.dest path.resolve p.build, file.path
-    # End event not emitted, why?
-    .on "data", =>
+    .on "end", =>
       @push file
       cb()
 
@@ -85,6 +92,7 @@ buildPageComponent = ->
     .pipe $.template file
     .pipe gulp.dest p.temp
     .on "end", =>
+      delete require.cache[ require.resolve "#{ __dirname }/#{ p.temp }#{ file.name }" ]
       @push file
       cb()
 
@@ -134,18 +142,19 @@ gulp.task "assets", ["clean"], ->
 gulp.task "react", ["clean"], ->
   gulp.src p.templates + "react.js"
   .pipe $.template
-    components: fs.readdirSync __dirname + "/components"
+    components: getFiles "react"
   .pipe gulp.dest p.temp
 
-gulp.task "client", ["clean"], ->
-  gulp.src p.client
+gulp.task "components", ["clean"], ->
+  gulp.src p.components
   .pipe gulp.dest p.temp
 
-gulp.task "browserify", ["react", "client"], ->
+gulp.task "browserify", ["react", "components"], ->
   browserify
     entries: "#{ __dirname }/#{ p.temp }app.coffee"
     extensions: [".coffee"]
   .require "#{ __dirname }/#{ p.temp }react", expose: "./react"
+  .require "#{ __dirname }/#{ p.temp }events-bus", expose: "./events-bus"
   .transform coffeeify
   .bundle()
   .pipe source "bundle.js"
@@ -165,14 +174,14 @@ gulp.task "build", ["clean", "assets", "react", "browserify"], ->
 gulp.task "watch", ["build"], ->
   gulp.watch [
     p.assets
-    p.client
     p.components
     p.contents
+    p.react
   ], ["build"]
 
 gulp.task "serve", ["build"], ->
   server.listen serverport
-  # lrserver.listen lrport
+  lrserver.listen lrport
 
 gulp.task "dev", ["serve", "watch"]
 

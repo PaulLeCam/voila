@@ -5,7 +5,7 @@ React.mappings = {};
 <% _.each(components, function(file) { %>
 <% var C = file.replace(".coffee", "") + "Component"; %>
 
-var <%- C %> = require("../components/<%- file %>");
+var <%- C %> = require("../react/<%- file %>");
 React.DOM[ <%- C %>.type.displayName ] = <%- C %>;
 if (<%- C %>.replaceTag) React.mappings[ <%- C %>.replaceTag ] = <%- C %>.type.displayName;
 
