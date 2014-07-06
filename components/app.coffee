@@ -1,5 +1,7 @@
 _ = require "highland"
 bus = require "./events-bus"
+
+loading = require "./behaviors/loading"
 navigation = require "./behaviors/navigation"
 rendering = require "./behaviors/rendering"
 
@@ -8,7 +10,7 @@ _ "router.navigate", bus
 .apply()
 
 _ "router.route", bus
-.through navigation.route
+.through loading.load
 .through rendering.setPage
 .apply()
 
