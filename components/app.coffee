@@ -1,13 +1,15 @@
-app = require "./app-component"
+_ = require "highland"
 bus = require "./events-bus"
-react = require "./react"
-router = require "./router"
+navigation = require "./behaviors/navigation"
+rendering = require "./behaviors/rendering"
 
-bus.on "page:navigate", (uri) ->
-  router.navigate uri, trigger: on
+_ "router.navigate", bus
+.through navigation.navigate
+.apply()
 
-# Render on first page load only, other ones will be handled by the component
-bus.once "page:loaded", (page) ->
-  react.renderComponent app(page.props, page.component()), document.getElementById "content"
+_ "router.route", bus
+.through navigation.route
+.through rendering.setPage
+.apply()
 
-router.history.start pushState: on
+navigation.start()

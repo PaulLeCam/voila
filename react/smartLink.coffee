@@ -12,7 +12,7 @@ module.exports = react.createClass
 
   handleClick: (e) ->
     e.preventDefault()
-    @emit "page:navigate", @props.href
+    @emit "router.navigate", @props.href
 
   render: ->
     props = {}

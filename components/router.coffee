@@ -1,9 +1,8 @@
 Router = require "ampersand-router"
-loadPage = require "./load-page"
 
 router = new Router
 
-router.route "*uri(/)", loadPage
-router.route "", -> loadPage "index"
+router.route "*uri(/)", "page"
+router.route "", "page"
 
 module.exports = router
