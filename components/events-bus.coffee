@@ -1,2 +1,6 @@
 Emitter = require("events").EventEmitter
-module.exports = new Emitter
+
+bus = new Emitter
+bus.setMaxListeners 0
+
+module.exports = bus

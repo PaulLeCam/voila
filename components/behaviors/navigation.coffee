@@ -9,7 +9,6 @@ navigate = _.map (uri) ->
 start = ->
   _ "route:page", router
   .each (route) ->
-    route ?= "index"
     bus.emit "router.route", route
 
   router.history.start pushState: on

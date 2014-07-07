@@ -1,6 +1,10 @@
 _ = require "highland"
-appState = require "../app-state"
+state = require "../app-state"
 bus = require "../events-bus"
+
+processUri = (uri) ->
+  uri = "index" if uri is "" or not uri?
+  uri
 
 loadPage = _.wrapCallback (uri, cb) ->
   Modernizr.load
@@ -13,25 +17,37 @@ loadPage = _.wrapCallback (uri, cb) ->
       catch err
         cb err
 
-loadAndAdd = _.pipeline(
-  _.map loadPage
-  _.series()
-  _.map (page) ->
-    appState.pages[ page.uri ] = page
-    bus.emit "state.pages.add", page
-    page
-)
+addPage = (page) ->
+  st = pages: {}
+  st.pages[ page.uri ] = page
+  state.set st
+  page
+
+getPage = (uri) ->
+  state.get().pages?[ uri ]
+
+loadAndAdd = (s) ->
+  s.map loadPage
+  .series()
+  .map addPage
 
 load = (s) ->
-  get = (uri) ->
-    appState.pages[ uri ]
+  p = s.map processUri
 
-  loaded = s.fork().map get
-  .filter (p) -> p?
+  loaded = p.fork()
+  .map getPage
+  .compact()
 
-  toLoad = s.fork().reject get
+  toLoad = p.fork()
+  .reject getPage
   .through loadAndAdd
 
   _([loaded, toLoad]).merge()
 
-module.exports = {load}
+preload = _.pipeline(
+  _.map processUri
+  _.reject getPage
+  _.through loadAndAdd
+)
+
+module.exports = {load, preload}

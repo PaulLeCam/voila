@@ -24,6 +24,15 @@ body {
   min-height: 100%;
 }
 
+a.smartlink {
+  color: blue;
+  transition: color 600ms ease-out;
+}
+
+a.smartlink--loaded {
+  color: green;
+}
+
 .app-bar {
   display: block;
   width: 100%;
