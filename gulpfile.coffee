@@ -53,7 +53,8 @@ applyComponentsMappings = ->
     React = require "#{ __dirname }/#{ p.temp }react"
     js = file.contents.toString()
     _.each React.mappings, (dest, src) ->
-      js = js.replace "DOM.#{ src }", "DOM.#{ dest }"
+      re = new RegExp "DOM\.#{ src }", "g"
+      js = js.replace re, "DOM.#{ dest }"
     file.contents = new Buffer js
     @push file
     cb()

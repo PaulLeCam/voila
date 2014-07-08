@@ -4,6 +4,7 @@ state = require "./app-state"
 
 loading = require "./behaviors/loading"
 navigation = require "./behaviors/navigation"
+network = require "./behaviors/network"
 rendering = require "./behaviors/rendering"
 
 _ "loader.preload", bus
@@ -19,4 +20,9 @@ _ "router.route", bus
 .through rendering.setPage
 .apply()
 
+network.onlineChange()
+.each (isOnline) ->
+  state.set {isOnline}
+
 navigation.start()
+network.start()

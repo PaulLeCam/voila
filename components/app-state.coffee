@@ -8,6 +8,8 @@ bus = require "./events-bus"
 
 state = [{}]
 
+# TODO: Add a "low priority" set that keeps all the changes and throttle its actual set
+
 module.exports =
   get: -> clone last state
   set: (data = {}) ->

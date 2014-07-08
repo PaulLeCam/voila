@@ -33,6 +33,10 @@ a.smartlink--loaded {
   color: green;
 }
 
+a.smartlink--offline {
+  color: orange;
+}
+
 .app-bar {
   display: block;
   width: 100%;

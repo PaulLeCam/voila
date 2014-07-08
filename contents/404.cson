@@ -2,4 +2,6 @@ title: "Page Not Found"
 component: "page"
 contents: """
   [Go back home](/)
+
+  [Hello React](http://facebook.github.io/react)
 """

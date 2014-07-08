@@ -30,16 +30,19 @@ module.exports = react.createClass
     @setState {uri}
 
   componentWillMount: ->
-    if @state.uri?
-      @detectLoaded @appState.get()
-      @appState.onChange @detectLoaded
+    @handleStateChange @appState.get()
+    @appState.onChange @handleStateChange
 
   componentWillUnmount: ->
-    @appState.offChange @detectLoaded
+    @appState.offChange @handleStateChange
 
-  detectLoaded: (s) ->
-    uri = if @state.uri is "" then "index" else @state.uri
-    @setState loaded: s.pages?[ uri ]
+  handleStateChange: (s) ->
+    state =
+      online: s.isOnline ? yes
+    if @state.uri?
+      uri = if @state.uri is "" then "index" else @state.uri
+      state.loaded = s.pages?[ uri ]
+    @setState state
 
   handleClick: (e) ->
     e.preventDefault()
@@ -52,6 +55,7 @@ module.exports = react.createClass
       @emit "loader.preload", @state.uri
     props.className = react.addons.classSet
       smartlink: on
-      "smartlink--loaded": @state.loaded
+      "smartlink--offline": not @state.online and not @state.loaded
+      "smartlink--loaded": @state.loaded and not @state.online
 
     @transferPropsTo a props, @props.children
