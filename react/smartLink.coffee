@@ -24,9 +24,9 @@ module.exports = react.createClass
 
   componentWillReceiveProps: (nextProps) ->
     uri =
-      if @nextProps.href and @nextProps.href[0] is "/"
+      if nextProps.href and nextProps.href[0] is "/"
         nextProps.href.replace /^\//, ""
-      else no
+      else null
     @setState {uri}
 
   componentWillMount: ->
@@ -38,21 +38,21 @@ module.exports = react.createClass
 
   handleStateChange: (s) ->
     state =
-      online: s.isOnline ? yes
+      online: s.network?.online ? yes
     if @state.uri?
       uri = if @state.uri is "" then "index" else @state.uri
-      state.loaded = s.pages?[ uri ]
+      state.loaded = !!s.pages?.cache?[ uri ]
     @setState state
 
   handleClick: (e) ->
     e.preventDefault()
-    @emit "router.navigate", @state.uri
+    @emit "router.navigate", uri: @state.uri
 
   render: ->
     props = {}
     if @state.uri?
       props.onClick = @handleClick
-      @emit "loader.preload", @state.uri
+      @emit "loader.preload", uri: @state.uri
     props.className = react.addons.classSet
       smartlink: on
       "smartlink--offline": not @state.online and not @state.loaded

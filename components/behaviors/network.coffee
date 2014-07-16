@@ -2,19 +2,25 @@ _ = require "highland"
 bean = require "bean"
 bus = require "../events-bus"
 
+setState = _.map (state) ->
+  state.set "network", state.params
+  state
+
 onlineChange = (timeout = 1000) ->
   online = _ "network.online", bus
-  .map -> yes
+  .map ->
+    online: yes
 
   offline = _ "network.offline", bus
-  .map -> no
+  .map ->
+    online: no
 
   # Watch changes and debounce
   change = _ [online, offline]
   .merge()
   .debounce timeout
 
-  first = _ [navigator.onLine ? yes]
+  first = _ [online: navigator.onLine ? yes]
 
   # Send first value ASAP, then debounced changes
   _ [first, change]
@@ -31,4 +37,4 @@ start = ->
   .each ->
     bus.emit "network.offline"
 
-module.exports = {start, onlineChange}
+module.exports = {start, setState, onlineChange}

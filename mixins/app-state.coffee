@@ -1,5 +1,5 @@
 bus = require "../temp/events-bus"
-state = require "../temp/app-state"
+state = require "../temp/state"
 
 appState =
   get: state.get

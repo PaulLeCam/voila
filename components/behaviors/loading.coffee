@@ -1,38 +1,51 @@
 _ = require "highland"
-state = require "../app-state"
+clone = require "lodash-node/modern/objects/clone"
+debug = require("debug") "voila:behavior:loading"
 bus = require "../events-bus"
 
-processUri = (uri) ->
-  uri = "index" if uri is "" or not uri?
-  uri
+processUri = (state) ->
+  state.params.uri = "index" if state.params.uri is ""
+  state
 
-loadPage = _.wrapCallback (uri, cb) ->
+loadPage = _.wrapCallback (state, cb) ->
+  uri = state.params.uri
+  debug "loadPage:load #{ uri }"
   Modernizr.load
     load: if uri is "index" then "/component.js" else "/#{ uri }/component.js"
     complete: ->
+      debug "loadPage:complete #{ uri }"
       try
         page = require "page/" + uri.replace /\/$/, ""
         page.uri = uri
-        cb null, page
+        state.params.loaded = page
+        debug "loadPage:loaded #{ uri }", page
       catch err
-        cb err
+        debug "loadPage:error #{ uri }", err
+      finally
+        cb err, state
 
-addPage = (page) ->
-  st = pages: {}
-  st.pages[ page.uri ] = page
-  state.set st
-  page
+addPage = (state) ->
+  if page = state.params.loaded
+    debug "addPage: #{ page.uri }"
+    state.set "pages.cache.#{ page.uri }", clone page
+  state
 
-getPage = (uri) ->
-  state.get().pages?[ uri ]
+getPage = (state) ->
+  state if state.get "pages.cache." + state.params.uri
 
-loadAndAdd = (s) ->
-  s.map loadPage
+setPage = (state) ->
+  key = "pages.cache." + state.params.uri
+  if page = state.get(key) ? state.next key
+    state.set "pages.current", clone page
+  state
+
+loadAndAdd = (stream) ->
+  stream.map loadPage
   .series()
   .map addPage
 
-load = (s) ->
-  p = s.map processUri
+load = (stream) ->
+  p = stream.map processUri
 
   loaded = p.fork()
   .map getPage
@@ -42,7 +55,9 @@ load = (s) ->
   .reject getPage
   .through loadAndAdd
 
-  _([loaded, toLoad]).merge()
+  _ [loaded, toLoad]
+  .merge()
+  .map setPage
 
 preload = _.pipeline(
   _.map processUri

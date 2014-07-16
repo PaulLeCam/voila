@@ -2,14 +2,18 @@ _ = require "highland"
 bus = require "../events-bus"
 router = require "../router"
 
-navigate = _.map (uri) ->
-  router.navigate uri, trigger: on
-  uri
+navigate = _.map (state) ->
+  uri = state.params.uri
+  if uri isnt state.get "pages.current.uri"
+    router.navigate uri, trigger: on
+    state.set "pages.current.uri", uri
+  state
 
 start = ->
   _ "route:page", router
-  .each (route) ->
-    bus.emit "router.route", route
+  .each (uri) ->
+    uri ?= "index"
+    bus.emit "router.route", {uri}
 
   router.history.start pushState: on
 

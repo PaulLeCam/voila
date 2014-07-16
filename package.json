@@ -48,6 +48,7 @@
   "dependencies": {
     "ampersand-router": "^1.0.1",
     "bean": "^1.0.14",
+    "debug": "^1.0.2",
     "highland": "^1.25.4",
     "lodash-node": "^2.4.1",
     "react": "^0.10.0"

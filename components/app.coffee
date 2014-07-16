@@ -1,28 +1,35 @@
 _ = require "highland"
+debug = require "debug"
 bus = require "./events-bus"
-state = require "./app-state"
+state = require "./state"
 
 loading = require "./behaviors/loading"
 navigation = require "./behaviors/navigation"
 network = require "./behaviors/network"
 rendering = require "./behaviors/rendering"
 
-_ "loader.preload", bus
-.through loading.preload
-.apply()
+emitState = (stateData) ->
+  bus.emit "state.change", stateData
 
-_ "router.navigate", bus
-.through navigation.navigate
-.apply()
+busProcess = (event, process) ->
+  _ event, bus
+  .through state.process process
+  .each emitState
 
-_ "router.route", bus
-.through loading.load
-.through rendering.setPage
-.apply()
+busProcess "loader.preload", loading.preload
+
+busProcess "router.navigate", navigation.navigate
+
+busProcess "router.route", [
+  loading.load
+  rendering.setPage
+]
 
 network.onlineChange()
-.each (isOnline) ->
-  state.set {isOnline}
+.through state.process network.setState
+.each emitState
+
+debug.enable "*"
 
 navigation.start()
 network.start()
