@@ -1,4 +1,5 @@
 title: "Page Not Found"
+type: "page"
 component: "page"
 contents: """
   [Go back home](/)

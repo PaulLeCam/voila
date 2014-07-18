@@ -1,5 +1,6 @@
 title: "Home"
-component: "page"
+type: "page"
+component: "pageIndex"
 name: "index"
 path: ""
 contents: """
