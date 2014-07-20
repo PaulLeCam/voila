@@ -136,6 +136,11 @@ gulp.task "assets", ["clean"], ->
   gulp.src p.assets
   .pipe gulp.dest p.build
 
+gulp.task "less", ["clean"], ->
+  gulp.src "./styles.less"
+  .pipe $.less()
+  .pipe gulp.dest p.build
+
 gulp.task "react", ["clean"], ->
   gulp.src p.templates + "react.js"
   .pipe $.template
@@ -157,7 +162,7 @@ gulp.task "browserify", ["react", "components"], ->
   .pipe source "bundle.js"
   .pipe gulp.dest p.build
 
-gulp.task "build", ["clean", "assets", "react", "browserify"], ->
+gulp.task "build", ["clean", "assets", "less", "react", "browserify"], ->
   contents.fork()
   .pipe $.markdown()
   .pipe _()
