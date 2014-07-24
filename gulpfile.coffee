@@ -18,6 +18,8 @@ coffeeify = require "coffeeify"
 
 # Libs for tasks
 CSON = require "cson-safe"
+frontMatter = require "front-matter"
+highlight = require "highlight.js"
 React = require "react/addons"
 {html2component} = require "./lib/react-transform"
 
@@ -34,7 +36,7 @@ p =
   assets: "assets/**/*"
   build: "build/"
   components: "components/**/*.coffee"
-  contents: "contents/**/*.cson"
+  contents: "contents/**/*"
   temp: "temp/"
   templates: "templates/"
   react: "react/**/*"
@@ -57,14 +59,24 @@ getFiles = (pth) ->
 
 # Open a CSON file, parse its contents and assign them to the file object
 getContent = (srcFile) ->
-  data = CSON.parse srcFile.contents.toString()
+  contents = srcFile.contents.toString()
+  ext = path.extname srcFile.path
+  switch ext
+    when ".json"
+      data = JSON.parse contents
+    when ".cson"
+      data = CSON.parse contents
+    else # assume markdown
+      c = frontMatter contents
+      data = c.attributes
+      data.contents = c.body
 
   file = new $.util.File
     contents: new Buffer data.contents
 
   file.path = data.path ? srcFile.path
     .replace __dirname + "/contents/", ""
-    .replace ".cson", ""
+    .replace ext, ""
   file.name = data.name ? file.path.replace /\/./g, (match) ->
     match.toUpperCase()
 
@@ -76,7 +88,10 @@ resetPath = (file) ->
 
 # Parse HTML and convert it to a React component
 convertToComponent = _.wrapCallback (file, cb) ->
-  html2component file.contents.toString(), (err, js) ->
+  mappings =
+    "{": "&#123;"
+    "}": "&#125;"
+  html2component file.contents.toString(), mappings, (err, js) ->
     return cb err if err
     file.contents = new Buffer js
     cb null, file
@@ -164,7 +179,9 @@ gulp.task "browserify", ["react", "components"], ->
 
 gulp.task "build", ["clean", "assets", "less", "react", "browserify"], ->
   contents.fork()
-  .pipe $.markdown()
+  .pipe $.markdown
+    highlight: (code, lang) ->
+      highlight.highlight(lang, code).value
   .pipe _()
   .flatten()
   .map resetPath
