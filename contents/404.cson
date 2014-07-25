@@ -1,8 +1,6 @@
 title: "Page Not Found"
 type: "page"
-component: "page"
+component: "page404"
 contents: """
   [Go back home](/)
-
-  [Hello React](http://facebook.github.io/react)
 """

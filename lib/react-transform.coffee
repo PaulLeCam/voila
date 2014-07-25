@@ -52,7 +52,7 @@ html2component = (html, mappings = {}, cb) ->
     else
       jsx = jsx.replace /<code data-replace="(code\d)+" \/>/gi, (match, id) ->
         if res = codes[ id ]
-          "<code className='#{ res.lang }' value='#{ res.code }'></code>"
+          "<code className='#{ res.lang }' highlight='#{ res.code }'></code>"
       jsx = jsx.replace new RegExp(from, "g"), to for from, to of mappings
       cb null, jsx2component jsx
 

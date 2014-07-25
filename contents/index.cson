@@ -5,6 +5,4 @@ name: "index"
 path: ""
 contents: """
   Index page content in `HTML`
-
-  [Oh no! 404](/404)
 """

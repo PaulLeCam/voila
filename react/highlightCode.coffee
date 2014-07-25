@@ -10,6 +10,10 @@ module.exports = react.createClass
 
   render: ->
     props =
-      dangerouslySetInnerHTML:
-        __html: @props.value
+      className: @props.className
+    if @props.highlight
+      props.dangerouslySetInnerHTML =
+        __html: @props.highlight
+    else
+      props.children = @props.children
     code props
